@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gradient Universe</title>
+    <style>
+        :root {
+            --primary-blue: #1a73e8;
+            --dark-blue: #0d47a1;
+            --light-blue: #4285f4;
+            --nav-bg: rgba(255, 255, 255, 0.9);
+            --nav-text: #333;
+            --nav-height: 70px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            overflow-x: hidden;
+        }
+
+        /* Navigation Styles */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--nav-height);
+            background: var(--nav-bg);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        nav.scrolled {
+            background: linear-gradient(135deg, var(--light-blue), var(--dark-blue));
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        nav.scrolled .nav-link {
+            color: white;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 90%;
+            max-width: 1200px;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--nav-text);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        nav.scrolled .logo {
+            color: white;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-left: 2rem;
+        }
+
+        .nav-link {
+            color: var(--nav-text);
+            text-decoration: none;
+            font-weight: 500;
+            position: relative;
+            transition: color 0.3s ease;
+            padding: 0.5rem 0;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-blue);
+        }
+
+        nav.scrolled .nav-link:hover {
+            color: #fff;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--primary-blue);
+            transition: width 0.3s ease;
+        }
+
+        nav.scrolled .nav-link::after {
+            background-color: white;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        /* Main Content Styles */
+        main {
+            margin-top: var(--nav-height);
+            min-height: calc(100vh - var(--nav-height));
+        }
+
+        section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .gradient-square {
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(135deg, var(--light-blue), var(--dark-blue));
+            margin: 2rem;
+            box-shadow: 0 10px 30px rgba(26, 115, 232, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .gradient-square:hover {
+            transform: translateY(-5px) rotate(5deg);
+            box-shadow: 0 15px 35px rgba(26, 115, 232, 0.4);
+        }
+
+        .gradient-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--dark-blue), var(--light-blue));
+            margin: 2rem;
+            box-shadow: 0 10px 30px rgba(26, 115, 232, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .gradient-circle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 15px 35px rgba(26, 115, 232, 0.4);
+        }
+
+        .element-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-top: 2rem;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(230, 240, 255, 0.9));
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .nav-container {
+                width: 95%;
+            }
+
+            .nav-links {
+                position: fixed;
+                top: var(--nav-height);
+                left: 0;
+                width: 100%;
+                background: var(--nav-bg);
+                flex-direction: column;
+                align-items: center;
+                padding: 1rem 0;
+                transform: translateY(-100%);
+                opacity: 0;
+                transition: transform 0.3s ease, opacity 0.3s ease;
+                z-index: 999;
+            }
+
+            .nav-links.active {
+                transform: translateY(0);
+                opacity: 1;
+            }
+
+            .nav-item {
+                margin: 0.5rem 0;
+            }
+
+            .hamburger {
+                display: block;
+                cursor: pointer;
+            }
+
+            nav.scrolled .hamburger {
+                color: white;
+            }
+
+            .gradient-square, .gradient-circle {
+                width: 150px;
+                height: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav id="mainNav">
+        <div class="nav-container">
+            <a href="#" class="logo">GradientU</a>
+            <ul class="nav-links">
+                <li class="nav-item"><a href="#home" class="nav-link">Home</a></li>
+                <li class="nav-item"><a href="#about" class="nav-link">About</a></li>
+                <li class="nav-item"><a href="#gallery" class="nav-link">Gallery</a></li>
+                <li class="nav-item"><a href="#contact" class="nav-link">Contact</a></li>
+            </ul>
+            <div class="hamburger">☰</div>
+        </div>
+    </nav>
+
+    <main>
+        <section id="home" class="hero">
+            <h1>Welcome to Gradient Universe</h1>
+            <div class="element-container">
+                <div class="gradient-square"></div>
+                <div class="gradient-circle"></div>
+                <div class="gradient-square"></div>
+            </div>
+        </section>
+
+        <section id="about">
+            <h2>About Our Gradients</h2>
+            <div class="element-container">
+                <div class="gradient-circle"></div>
+                <div class="gradient-square"></div>
+                <div class="gradient-circle"></div>
+                <div class="gradient-square"></div>
+            </div>
+        </section>
+
+        <section id="gallery">
+            <h2>Gradient Gallery</h2>
+            <div class="element-container">
+                <div class="gradient-square"></div>
+                <div class="gradient-circle"></div>
+                <div class="gradient-square"></div>
+                <div class="gradient-circle"></div>
+                <div class="gradient-square"></div>
+            </div>
+        </section>
+
+        <section id="contact">
+            <h2>Get in Touch</h2>
+            <div class="element-container">
+                <div class="gradient-circle"></div>
+                <div class="gradient-square"></div>
+                <div class="gradient-circle"></div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Navigation Scroll Effect
+        const nav = document.getElementById('mainNav');
+        const navHeight = nav.offsetHeight;
+
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > navHeight) {
+                nav.classList.add('scrolled');
+            } else {
+                nav.classList.remove('scrolled');
+            }
+        });
+
+        // Smooth Scrolling for Navigation Links
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = link.getAttribute('href');
+                const targetSection = document.querySelector(targetId);
+                
+                window.scrollTo({
+                    top: targetSection.offsetTop - nav.offsetHeight,
+                    behavior: 'smooth'
+                });
+
+                // Close mobile menu if open
+                document.querySelector('.nav-links').classList.remove('active');
+            });
+        });
+
+        // Mobile Menu Toggle
+        const hamburger = document.querySelector('.hamburger');
+        const navLinks = document.querySelector('.nav-links');
+
+        hamburger.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.nav-container') && navLinks.classList.contains('active')) {
+                navLinks.classList.remove('active');
+            }
+        });
+
+        // Resize event to reset mobile menu
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                navLinks.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
+
