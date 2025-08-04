@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeatherNow - Live Weather Updates</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --accent: #4895ef;
+            --light: #f8f9fa;
+            --dark: #212529;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #87CEEB; /* Sky blue color */
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            color: var(--dark);
+            transition: background 0.5s ease;
+        }
+        
+        .weather-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .weather-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 36px 0 rgba(31, 38, 135, 0.15);
+        }
+        
+        .weather-icon {
+            width: 100px;
+            height: 100px;
+            filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.1));
+        }
+        
+        .search-input {
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.3);
+        }
+        
+        .temp-display {
+            font-size: 4rem;
+            font-weight: 300;
+            transition: all 0.3s ease;
+        }
+        
+        .loader {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error-message {
+            animation: shake 0.5s;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-4xl mx-auto">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">WeatherNow</h1>
+            <p class="text-gray-600">Get real-time weather updates for any location</p>
+        </header>
+        
+        <div class="flex flex-col gap-6">
+            <!-- Search Section -->
+            <div class="weather-card p-6">
+                <div class="flex flex-col md:flex-row gap-4">
+                    <div class="relative flex-grow">
+                        <input 
+                            type="text" 
+                            id="locationInput" 
+                            placeholder="Enter city or zip code..." 
+                            class="w-full search-input px-4 py-3 rounded-lg border border-gray-200 focus:border-blue-500 focus:outline-none"
+                        >
+                        <button 
+                            id="clearSearch" 
+                            class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 hidden"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    <button 
+                        id="searchButton" 
+                        class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-300 flex-shrink-0"
+                    >
+                        Search
+                    </button>
+                    <button 
+                        id="locationButton" 
+                        class="px-4 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg transition-colors duration-300 flex-shrink-0 flex items-center gap-2"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        My Location
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Current Weather Display -->
+            <div class="weather-card p-6" id="weatherContainer" style="display: none;">
+                <div class="flex flex-col md:flex-row gap-6 items-center md:items-start">
+                    <!-- Main weather info -->
+                    <div class="text-center md:text-left flex-1">
+                        <div class="flex items-center justify-center md:justify-start gap-4 mb-4">
+                            <div id="weatherIcon">
+                                <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/24b98562-1c38-48f8-b904-cb507e3593d2.png" alt="Sunny weather with few clouds animation illustration" class="weather-icon" />
+                            </div>
+                            <div>
+                                <h2 id="locationName" class="text-2xl font-bold">New York, US</h2>
+                                <p id="currentDateTime" class="text-gray-500">Monday, June 20, 2023</p>
+                                <p id="weatherDescription" class="text-gray-600 capitalize">Sunny</p>
+                            </div>
+                        </div>
+                        <div class="flex items-end gap-2">
+                            <span id="currentTemp" class="temp-display">72</span>
+                            <span class="text-2xl text-gray-500 relative -top-4">°F</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Weather details -->
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 flex-1">
+                        <div class="bg-blue-100 p-4 rounded-lg">
+                            <p class="text-sm text-gray-500">Feels Like</p>
+                            <p class="text-lg font-semibold"><span id="feelsLike">74</span>°</p>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-sm text-gray-500">Humidity</p>
+                            <p class="text-lg font-semibold"><span id="humidity">65</span>%</p>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-sm text-gray-500">Wind</p>
+                            <p class="text-lg font-semibold"><span id="windSpeed">8</span> mph</p>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-sm text-gray-500">Pressure</p>
+                            <p class="text-lg font-semibold"><span id="pressure">1012</span> hPa</p>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-sm text-gray-500">Visibility</p>
+                            <p class="text-lg font-semibold"><span id="visibility">6</span> mi</p>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-sm text-gray-500">UV Index</p>
+                            <p class="text-lg font-semibold"><span id="uvi">5</span> Moderate</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Forecast placeholder (would be implemented in a more complete version) -->
+                <div class="mt-6 p-4 bg-blue-100 rounded-lg text-center text-blue-800 border border-blue-200">
+                    <p>Hourly and 7-day forecast would be displayed here in a full implementation.</p>
+                </div>
+            </div>
+            
+            <!-- Loading State -->
+            <div id="loadingState" class="text-center py-12 hidden">
+                <div class="inline-flex items-center">
+                    <svg class="animate-spin -ml-1 mr-3 h-8 w-8 text-blue-500 loader" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Fetching weather data...</span>
+                </div>
+            </div>
+            
+            <!-- Error State -->
+            <div id="errorState" class="weather-card p-6 text-center hidden error-message">
+                <div class="text-red-500 flex flex-col items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <h3 class="text-xl font-bold">Oops! Something went wrong</h3>
+                    <p id="errorMessage" class="mt-2">We couldn't fetch weather data for your location. Please try again.</p>
+                </div>
+                <button id="retryButton" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                    Try Again
+                </button>
+            </div>
+            
+            <!-- Initial State -->
+            <div id="initialState" class="weather-card p-12 text-center">
+                <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/9bed2009-36f4-424a-a80d-bf091f5980e0.png" alt="Illustration of a weather dashboard with sun, clouds and temperature indicators" class="mx-auto mb-6 rounded-lg" />
+                <h3 class="text-2xl font-bold mb-2">Welcome to WeatherNow</h3>
+                <p class="text-gray-600 mb-6">Enter a location or use your current location to see the weather forecast</p>
+                <div class="flex justify-center gap-4">
+                    <button id="guideLocationButton" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Use My Location
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const locationInput = document.getElementById('locationInput');
+            const searchButton = document.getElementById('searchButton');
+            const locationButton = document.getElementById('locationButton');
+            const clearSearch = document.getElementById('clearSearch');
+            const weatherContainer = document.getElementById('weatherContainer');
+            const loadingState = document.getElementById('loadingState');
+            const errorState = document.getElementById('errorState');
+            const initialState = document.getElementById('initialState');
+            const retryButton = document.getElementById('retryButton');
+            const guideLocationButton = document.getElementById('guideLocationButton');
+            
+            // For demonstration purposes - in a real app, you would register for an API key
+            const apiKey = 'YOUR_API_KEY'; // Normally this would be in environment variables
+            
+            // Event Listeners
+            locationInput.addEventListener('input', toggleClearButton);
+            clearSearch.addEventListener('click', clearInput);
+            searchButton.addEventListener('click', searchByLocation);
+            locationButton.addEventListener('click', getLocationWeather);
+            guideLocationButton.addEventListener('click', getLocationWeather);
+            retryButton.addEventListener('click', retryLastAction);
+            
+            // For demo, simulate API call with timeout
+            locationInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchByLocation();
+                }
+            });
+            
+            // Helper Functions
+            function toggleClearButton() {
+                clearSearch.style.display = locationInput.value.trim() ? 'block' : 'none';
+            }
+            
+            function clearInput() {
+                locationInput.value = '';
+                clearSearch.style.display = 'none';
+                locationInput.focus();
+            }
+            
+            function searchByLocation() {
+                const location = locationInput.value.trim();
+                if (!location) return;
+                
+                showLoading();
+                // In a real app, would call weather API here
+                setTimeout(() => {
+                    // Simulate API call and response
+                    mockWeatherResponse(location);
+                }, 1500);
+            }
+            
+            function getLocationWeather() {
+                showLoading();
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        position => {
+                            // In a real app, would call weather API with coordinates
+                            setTimeout(() => {
+                                mockWeatherResponse('Current Location', true);
+                            }, 1500);
+                        },
+                        error => {
+                            showError('We could not get your location. Please enable location services or enter a location manually.');
+                            console.error('Geolocation error:', error);
+                        }
+                    );
+                } else {
+                    showError('Geolocation is not supported by your browser. Please enter a location manually.');
+                }
+            }
+            
+            function retryLastAction() {
+                const location = locationInput.value.trim();
+                if (location) {
+                    searchByLocation();
+                } else {
+                    getLocationWeather();
+                }
+            }
+            
+            // UI State Management
+            function showLoading() {
+                initialState.classList.add('hidden');
+                weatherContainer.style.display = 'none';
+                errorState.classList.add('hidden');
+                loadingState.classList.remove('hidden');
+            }
+            
+            function showWeather() {
+                initialState.classList.add('hidden');
+                loadingState.classList.add('hidden');
+                errorState.classList.add('hidden');
+                weatherContainer.style.display = 'block';
+            }
+            
+            function showError(message) {
+                initialState.classList.add('hidden');
+                loadingState.classList.add('hidden');
+                weatherContainer.style.display = 'none';
+                errorState.classList.remove('hidden');
+                document.getElementById('errorMessage').textContent = message || 'An unknown error occurred. Please try again.';
+            }
+            
+            // Mock data for demo purposes
+            function mockWeatherResponse(location, isCurrentLocation = false) {
+                // These would come from the API in a real app
+                const mockData = {
+                    name: isCurrentLocation ? 'Your Location' : location,
+                    weather: [
+                        {
+                            main: ['Clear', 'Clouds', 'Rain', 'Thunderstorm', 'Snow', 'Mist'][Math.floor(Math.random() * 6)],
+                            description: ['clear sky', 'few clouds', 'scattered clouds', 'broken clouds', 'shower rain', 'rain', 'thunderstorm', 'snow', 'mist'][Math.floor(Math.random() * 9)],
+                            icon: ['01d', '02d', '03d', '04d', '09d', '10d', '11d', '13d', '50d'][Math.floor(Math.random() * 9)]
+                        }
+                    ],
+                    main: {
+                        temp: Math.floor(Math.random() * 40) + 50, // 50-90°F
+                        feels_like: Math.floor(Math.random() * 40) + 50,
+                        humidity: Math.floor(Math.random() * 60) + 20, // 20-80%
+                        pressure: Math.floor(Math.random() * 30) + 990 // 990-1020 hPa
+                    },
+                    wind: {
+                        speed: Math.floor(Math.random() * 20) + 1 // 1-20 mph
+                    },
+                    visibility: Math.floor(Math.random() * 5) + 1, // 1-5 miles
+                    uvi: (Math.random() * 10).toFixed(1) // 0-10 UV index
+                };
+                
+                updateWeatherUI(mockData);
+            }
+            
+            function updateWeatherUI(data) {
+                const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                const currentDate = new Date().toLocaleDateString(undefined, dateOptions);
+                
+                document.getElementById('locationName').textContent = data.name;
+                document.getElementById('currentDateTime').textContent = currentDate;
+                document.getElementById('weatherDescription').textContent = data.weather[0].description;
+                document.getElementById('currentTemp').textContent = Math.round(data.main.temp);
+                document.getElementById('feelsLike').textContent = Math.round(data.main.feels_like);
+                document.getElementById('humidity').textContent = data.main.humidity;
+                document.getElementById('windSpeed').textContent = data.wind.speed;
+                document.getElementById('pressure').textContent = data.main.pressure;
+                document.getElementById('visibility').textContent = data.visibility;
+                document.getElementById('uvi').textContent = data.uvi;
+                
+                // Would use actual weather icons from API in a real app
+                const weatherIcon = document.querySelector('#weatherIcon img');
+                const weatherCondition = data.weather[0].main.toLowerCase();
+                
+                // Update placeholder image with descriptive alt text
+                weatherIcon.src = 'https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/f96f0a24-0980-4b81-834b-5ccbdd0f62d6.png';
+                weatherIcon.alt = `${weatherCondition} weather condition illustration with appropriate colors and styling`;
+                
+                showWeather();
+            }
+        });
+    </script>
+</body>
+</html>
+
